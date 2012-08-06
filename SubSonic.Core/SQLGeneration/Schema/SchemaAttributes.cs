@@ -76,7 +76,7 @@ namespace SubSonic.SqlGeneration.Schema
     {
         public bool Accept(IColumn column)
         {
-            return DbType.String == column.DataType;
+            return column.IsString;
         }
 
         public void Apply(IColumn column)
@@ -90,12 +90,36 @@ namespace SubSonic.SqlGeneration.Schema
     {
         public bool Accept(IColumn column)
         {
-            return DbType.String == column.DataType;
+            return column.IsString;
         }
 
         public void Apply(IColumn column)
         {
             column.MaxLength = 8001;
+        }
+    }
+
+    /// <summary>
+    /// Specifies that the SQL parameter data type to use should be AnsiString
+    /// instead of string to support non-Unicode columns.
+    /// </summary>
+    /// <remarks>
+    /// Rationale: using nvarchar parameters in SQL Server to query a varchar
+    /// column with an index forces an index scan which hurts performance. This
+    /// allows you to specify that a given string property will map to a non-Unicode
+    /// parameter for use with varchar-style columns.
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class SubSonicAnsiStringAttribute : Attribute, IPropertyMappingAttribute
+    {
+        public bool Accept(IColumn column)
+        {
+            return column.IsString;
+        }
+
+        public void Apply(IColumn column)
+        {
+            column.DataType = DbType.AnsiString;
         }
     }
 
@@ -142,7 +166,7 @@ namespace SubSonic.SqlGeneration.Schema
 
         public bool Accept(IColumn column)
         {
-            return DbType.String == column.DataType;
+            return column.IsString;
         }
 
         public void Apply(IColumn column)
